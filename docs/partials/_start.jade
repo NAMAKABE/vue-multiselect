@@ -1,11 +1,8 @@
-section.start(
-  :style="gradient"
-)
+section.start
   .center-vertically
     h1.typo__h1
       img.logo(src="./static/vue-logo.png")
       | Vue-multiselect
-      small.version (v1.1.2)
     h3.typo__h3 The most complete selecting solution for
       = ' '
       a.typo__link(href="http://vuejs.org" target="_BLANK") Vue.js
@@ -18,12 +15,12 @@ section.start(
             :selected="selected",
             :multiple="multiple",
             :searchable="searchable",
+            placeholder="Select option",
+            :on-change="afterChange",
             :show-labels="true",
             :limit="3",
             :taggable="true",
-            @tag="onTagging"
-            @update="afterChange",
-            placeholder="Select option",
+            :on-tag="onTagging"
             select-label="Enter to select"
           )
             span(slot="noResult").
@@ -32,16 +29,16 @@ section.start(
             .grid__column.grid__unit--md-6.list
               ul.list__ul
                 li.typo__li Single / multi select
+                li.typo__li Dropdowns
                 li.typo__li: a.typo__link(href="#search") Searchable
-                li.typo__li: a.typo__link(href="#tagging") Tagging
-                li.typo__li: a.typo__link(href="#partials") Custom option templates (1.1.0+)
-                li.typo__li: a.typo__link(href="#action") Action dispatcher
+                li.typo__li: a.typo__link(href="#tagging") Tagging support
+                li.typo__li Custom components with Mixins
             .grid__column.grid__unit--md-6.list
               ul.list__ul
-                li.typo__li Vuex support by default
+                li.typo__li: a.typo__link(href="#vuex") Vuex support
                 li.typo__li: a.typo__link(href="#ajax") Ajax options
-                li.typo__li: a.typo__link(href="#custom") Fully configurable
-                li.typo__li +99% test coverage
+                li.typo__li: a.typo__link(href="#custom") Configurable
+                li.typo__li +90% test coverage
                 li.typo__li No dependencies
 
     .grid__row.grid__row--centered

@@ -1,20 +1,11 @@
 # vue-multiselect ![Build Status](https://circleci.com/gh/monterail/vue-multiselect/tree/master.svg?style=shield&circle-token=5c931ff28fd12587610f835472becdd514d09cef)
 Probably the most complete *selecting* solution for Vue.js, without jQuery.
 
-#### Current version: v1.1.2
-
-#### For Vue 2.0 users:
-Vue-multiselect 2.0-beta is available: `npm install vue-multiselect@next`. 
-API changes:
-* Instead of Vue.partial for custom option templates you can use a custom render function.
-* The `:key` props has changed to `:track-by`, due to conflicts with Vue 2.0.
-
 ### Features & characteristics:
 * NO dependencies
 * Single select
 * Multiple select
 * Tagging
-* Custom option templates (1.1.0+)
 * Dropdowns
 * Filtering
 * Search with suggestions
@@ -22,7 +13,7 @@ API changes:
 * Basic component and support for custom components
 * Vuex support
 * Async options support
-* \> 99% test coverage
+* \> 95% test coverage
 * Fully configurable (see props list below)
 
 ## Demo & docs
@@ -38,11 +29,7 @@ npm install vue-multiselect
 ``` html
 <template>
   <div>
-    <multiselect
-      :selected="selected"
-      :options="options"
-      @update="updateSelected">
-    </multiselect>
+    <multiselect :selected.sync="selected" :options="options"></multiselect>
   </div>
 </template>
 ```
@@ -55,11 +42,6 @@ export default {
     return {
       selected: null,
       options: ['list', 'of', 'options']
-    }
-  },
-  methods: {
-    updateSelected (newSelected) {
-      this.selected = newSelected
     }
   }
 }
@@ -82,8 +64,13 @@ export default {
 
 ## Roadmap:
 
-* Grouping
+* Option grouping
+* Better mobile support
+* Stateless dropdowns (with no selected prop, just action pickers / search boxes)
+* RTL support, accessibility
 * Examples of custom components / templates ready to use in project
+* Reworking the documentation to include much more examples and use cases
+* Fix problem with not counting the height of the option element when creating a custom element. This is important for scrolling the options viewport when using highlighting pointer.
 
 ## Examples
 in jade-lang/pug-lang
@@ -92,13 +79,13 @@ in jade-lang/pug-lang
 ``` jade
 multiselect(
   :options="source",
-  :selected="value",
+  :selected.sync="value",
+  :multiple="false",
   :searchable="false",
+  placeholder="Select one",
+  label="name",
   :close-on-select="false",
   :allow-empty="false",
-  @update="updateSelected",
-  label="name",
-  placeholder="Select one",
   key="name"
 )
 ```
@@ -107,48 +94,51 @@ multiselect(
 ``` jade
 multiselect(
   :options="source",
-  :selected="value",
-  :close-on-select="true",
-  :clear-on-select="false",
-  @update="updateValue",
+  :selected.sync="value",
+  :multiple="false",
+  :searchable="true",
   placeholder="Select one",
   label="name",
+  :close-on-select="true",
+  :clear-on-select="false"
   key="name"
 )
 ```
 
 ### Multiple select with search
-```jade
+``` jade
 multiselect(
   :options="source",
-  :selected="multiValue",
+  :selected.sync="multiValue",
   :multiple="true",
-  :close-on-select="true",
-  @update="updateMultiValue",
+  :searchable="true",
   placeholder="Pick some",
   label="name",
+  :close-on-select="true"
   key="name"
 )
 ```
 
 ### Tagging
-with `@tag` event
-```jade
+with `:on-tag` and `:on-change` callback functions
+``` jade
 multiselect(
   :options="taggingOptions",
   :selected="taggingSelected",
-  :multiple="true",
+  :multiple="multiple",
+  :searchable="searchable",
+  :on-tag="addTag",
+  :on-change="updateSelectedTagging",
   :taggable="true",
-  @tag="addTag",
-  @update="updateSelectedTagging",
-  tag-placeholder="Add this as new tag",
-  placeholder="Type to search or add tag",
-  label="name",
+  tag-placeholder="Add this as new tag"
+  placeholder="Type to search or add tag"
+  label="name"
   key="code"
 )
 ```
 
-```javascript
+``` javascript
+
 addTag (newTag) {
   const tag = {
     name: newTag,
@@ -159,59 +149,37 @@ addTag (newTag) {
 },
 ```
 
-### Custom option template
-Using partial API
-```jade
+### Vuex supporting example
+with `:on-change` callback function
+
+``` jade
 multiselect(
-  :options="styleList",
-  :selected="selectedStyle",
-  :option-height="130",
-  :custom-label="styleLabel",
-  @update="updateSelectedStyle",
-  option-partial="customOptionPartial"
-  placeholder="Fav No Man’s Sky path"
-  label="title"
-  key="title"
+  :options="source",
+  :selected="value",
+  :multiple="false",
+  :searchable="false",
+  placeholder="Select one",
+  :on-change="onChangeAction"
 )
 ```
 
 ``` javascript
-import customOptionPartial from './partials/customOptionPartial.html'
-Vue.partial('customOptionPartial', customOptionPartial)
-
-// ...Inside Vue component
 methods: {
-  styleLabel ({ title, desc }) {
-    return `${title} – ${desc}`
-  },
-  updateSelectedStyle (style) {
-    this.selectedStyle = style
+  onChangeAction (newValue) {
+    dispatch('SET_SELECT_VALUE', newValue)
   }
 }
-```
-
-``` html
-<div>
-  <img class="option__image" :src="option.img" alt="No Man’s Sky" />
-  <div class="option__desc">
-    <span class="option__title">{{ option.title }}</span>
-    <span class="option__small">
-      {{ option.desc }}
-    </span>
-  </div>
-</div>
-
 ```
 
 ### Asynchronous dropdown
 ``` jade
 multiselect(
   :options="countries",
-  :selected="selectedCountries",
+  :selected.sync="selectedCountries",
   :multiple="multiple",
   :searchable="searchable",
-  @search-change="asyncFind",
   placeholder="Type to search",
+  :on-search-change="asyncFind",
   label="name"
   key="code"
 )
@@ -219,7 +187,7 @@ multiselect(
     Oops! No elements found. Consider changing the search query.
 ```
 
-```javascript
+``` javascript
 methods: {
   asyncFind (query) {
     this.countries = findService(query)
@@ -253,10 +221,15 @@ props: {
     default: false
   },
   /**
-   * Presets the selected options value.
+   * Required. Presets the selected options. Add `.sync` to
+   * update parent value. If this.onChange callback is present,
+   * this will not update. In that case, the parent is responsible
+   * for updating this value.
    * @type {Object||Array||String||Integer}
    */
-  selected: {},
+  selected: {
+    required: true
+  },
   /**
    * Key to compare objects
    * @default 'id'
@@ -330,6 +303,39 @@ props: {
     default: true
   },
   /**
+   * Callback function to call after this.value changes
+   * @callback onChange
+   * @default false
+   * @param {Array||Object||String||Integer} Current this.value
+   * @param {Integer} $index of current selection
+   * @type {Function}
+   */
+  onChange: {
+    type: Function,
+    default: false
+  },
+  /**
+   * Callback function to call after this.search changes
+   * @callback onSearchChange
+   * @default false
+   * @param {String} Pass current search String
+   * @type {Function}
+   */
+  onSearchChange: {
+    type: Function,
+    default: false
+  },
+  /**
+   * Value that indicates if the dropdown has been used.
+   * Useful for validation.
+   * @default false
+   * @type {Boolean}
+   */
+  touched: {
+    type: Boolean,
+    default: false
+  },
+  /**
    * Reset this.value, this.search, this.selected after this.value changes.
    * Useful if want to create a stateless dropdown, that fires the this.onChange
    * callback function with different params.
@@ -368,6 +374,19 @@ props: {
     default: false
   },
   /**
+   * Callback function to run when attemting to add a tag
+   * @default suitable for primitive values
+   * @param {String} Tag string to build a tag
+   * @type {Function}
+   */
+  onTag: {
+    type: Function,
+    default: function (tag) {
+      this.options.push(tag)
+      this.value.push(tag)
+    }
+  },
+  /**
    * String to show when highlighting a potential tag
    * @default 'Press enter to create a tag'
    * @type {String}
@@ -384,15 +403,6 @@ props: {
   max: {
     type: Number,
     default: false
-  },
-  /**
-   * Will be passed with all events as second param.
-   * Useful for identifying events origin.
-   * @default null
-   * @type {String|Integer}
-  */
-  id: {
-    default: null
   }
 }
 
@@ -408,7 +418,7 @@ props: {
     type: Boolean,
     default: true
   }
-},
+}
 
 // Multiselect.vue
 
@@ -450,7 +460,7 @@ props: {
     default: true
   },
   /**
-   * Limit the display of selected options. The rest will be hidden within the limitText string.
+   * Label to look for in option Object
    * @default 'label'
    * @type {String}
    */
@@ -468,24 +478,6 @@ props: {
   limitText: {
     type: Function,
     default: count => `and ${count} more`
-  },
-  /**
-   * Set true to trigger the loading spinner.
-   * @default False
-   * @type {Boolean}
-  */
-  loading: {
-    type: Boolean,
-    default: false
-  },
-  /**
-   * Disables the multiselect if true.
-   * @default false
-   * @type {Boolean}
-  */
-  disabled: {
-    type: Boolean,
-    default: false
   }
 }
 ```
@@ -511,9 +503,3 @@ npm run unit-watch
 ```
 
 For detailed explanation on how things work, checkout the [guide](http://vuejs-templates.github.io/webpack/) and [docs for vue-loader](http://vuejs.github.io/vue-loader).
-
-## License
-
-[MIT](http://opensource.org/licenses/MIT)
-
-Copyright (c) 2016 Damian Dulisz
