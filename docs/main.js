@@ -17,36 +17,15 @@ window.b = new Vue({
         return {
 
             // options: [{'name':'SB'}],
-            options: [
-
-                {
-
-
-                    "id": "43707989896386641922",
-                    "name": "dvdvdvdvd",
-                    "contact": {"addr": "", "attn": "", "tel": "", "fax": ""}
-                },
-                {
-
-
-                    "id": "4370798989638664192",
-                    "name": "121",
-                    "contact": {"addr": "", "attn": "", "tel": "", "fax": ""}
-                },
-                {
-
-
-                    "id": "43707989896386641942",
-                    "name": "aaaaa",
-                    "contact": {"addr": "", "attn": "", "tel": "", "fax": ""}
-                }
-            ],
+            options: ['7214124','11111','asfaisa'],
 
 
 
 
 
-            selected: { "id":"219", "nameZh":"津北辰办", "nameEn":"", "code":"0219" },
+
+
+            selected: '7214124',
 
             source: [
                 {name: 'Vue.js', language: 'JavaScript'},

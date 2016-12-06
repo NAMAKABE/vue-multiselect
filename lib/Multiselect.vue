@@ -1,7 +1,7 @@
 <template>
         <div
                 tabindex="0"
-                :class="[class,isOpen?'multiselect--active':'']"
+                :class="[class,isOpen?'multiselect--active':'',disabled?'multiselect--disabled':'']"
                 @focus="activate()"
                 @blur="searchable ? deactivate() : deactivate()"
                 @keydown.self.down.prevent="pointerForward()"
@@ -9,6 +9,7 @@
                 @keydown.enter.stop.prevent.self="addPointerElement()"
                 @keyup.esc="deactivate()"
                 id="{{ id }}"
+                debug="{{ debugMark }}"
                 class="multiselect">
                 <slot name="validate" v-el:oopp></slot>
 
@@ -180,7 +181,7 @@
                 width: 16px;
                 height: 16px;
                 border-radius: 100%;
-                border-color: #41b883 transparent transparent;
+                border-color: #367fa9 transparent transparent;
                 border-style: solid;
                 border-width: 2px;
                 box-shadow: 0 0 0 1px transparent;
@@ -295,7 +296,7 @@
                 box-shadow: none;
         }
         .multiselect.sm .multiselect__tags {
-                padding: 3px 40px 0 8px;
+                padding: 3px 30px 0 8px;
                 border-radius: 0;
                 min-height: 30px;
         }
@@ -310,7 +311,7 @@
                 margin-right: 10px;
                 color: #fff;
                 line-height: 1;
-                background: #41b883;
+                background: #367fa9;
                 margin-bottom: 8px;
         }
         .multiselect__tag-icon {
@@ -435,7 +436,7 @@
                 padding-left: 20px;
         }
         .multiselect__option--highlight {
-                background: #41b883;
+                background: #367fa9;
                 outline: none;
                 color: white;
         }
@@ -493,5 +494,10 @@
         @keyframes spinning {
                 from { transform: rotate(0) }
                 to { transform: rotate(2turn) }
+        }
+        .multiselect--disabled .multiselect__tags,
+        .multiselect--disabled .multiselect__input,
+        .multiselect--disabled .multiselect__single {
+                background-color: #ededed
         }
 </style>

@@ -27,7 +27,8 @@ module.exports = {
                 query: {}
             },
             inputButton: false,
-            selectdWatcherCount: 0
+            selectdWatcherCount: 0,
+            debugMark: ''
         }
     },
     props: {
@@ -157,6 +158,13 @@ module.exports = {
          * @type {Boolean}
          */
         hideSelected: {
+            type: Boolean,
+            default: false
+        },
+
+
+
+        disabled: {
             type: Boolean,
             default: false
         },
@@ -292,7 +300,14 @@ module.exports = {
                     this.options.push(tag)
                 }
 
-                this.value instanceof Array ? this.value.push(tag) : this.value = deepClone(tag);
+
+                if (this.isStringArray) {
+                    this.value instanceof Array ? this.value.push(tag[this.label]) : this.value = tag[this.label];
+                    this.options.unshift(this.value);
+                } else {
+                    this.value instanceof Array ? this.value.push(tag) : this.value = deepClone(tag);
+                }
+
 
             }
         },
@@ -307,6 +322,7 @@ module.exports = {
         /**
          * 新建标签的KEY
          */
+
         onTagKey: {
             type: Function,
             default: function () {
@@ -413,8 +429,37 @@ module.exports = {
 
 
 
+        if (Vue.config.debug) {
+            let f             = Math.ceil(Math.random() * 10000000000);
+            window['$mu' + f] = this;
+            this.debugMark    = '$mu' + f;
+            console.log('<multiselect> ready. $mu' + f, window['$mu' + f].$el);
+        }
+
+        // console.log('ms ready, this.validator:', this.validator);
+        if (this.validator) {
+            if (
+
+                !this.selected
+                ||
+                (this.key ? this.isNull(this.selected[this.key]) : false  )
+
+            ) {
+                this.validator.valid   = false;
+                this.validator.invalid = true;
+            } else {
+                this.validator.valid   = true;
+                this.validator.invalid = false;
+            }
+
+        }
+
     },
     computed: {
+
+        isStringArray(){
+            return this.options.length > 0 && Object.prototype.toString.call(this.options[0]) === '[object String]';
+        },
         filteredOptions () {
             let label   = this.label;
             let key     = this.key;
@@ -424,24 +469,27 @@ module.exports = {
                 : this.options
             options     = this.$options.filters.filterBy(options, this.search)
 
-            // 允许新建 + 未达到最大长度 + ？？
+
+
+            // debugger;
+            // 如果可以新增，未达到最大长度，并且这个选项不存在，则执行新增操作
             if (this.taggable && search.length && !this.isExistingOption(search)) {
+
+
+
                 let o    = {isTag: true}
                 o[label] = search;
                 key && (o[key] = this.onTagKey());
 
+                // if (this.isStringArray) {
+                //
+                //
+                // } else {
+                //     let o = search;
+                // }
+
                 options.unshift(o)
-
-
             }
-            // console.log(options)
-            //
-            //
-            // let ___o = {others: true}
-            //
-            //
-            // ___o[label] = '其他';
-            // options.push(___o)
 
 
             return options
@@ -478,6 +526,9 @@ module.exports = {
                 this.search = this.getOptionLabel(this.value, true)
             }
         },
+
+
+
         /**
          * 下拉项的Watcher
          * 当onSearchChange激活并且搜索时
@@ -509,6 +560,11 @@ module.exports = {
             this.onSearchChange && (this.loading = false)
         },
         'selected' (newVal, oldVal) {
+
+
+            // if (Vue.config.debug) {
+            //     console.log('<selected> changed detected. old value is ' + oldVal + ', new value is ' + newVal);
+            // }
             if (JSON.stringify(newVal) !== JSON.stringify(oldVal)) {
                 this.value = deepClone(this.selected)
             }
@@ -523,40 +579,30 @@ module.exports = {
 
 
 
-            if (this.selectdWatcherCount <= 1) {
-                if (this.validator) {
-                    if (
+            if (this.validator) {
+                if (
 
-                        !this.selected
-                        ||
-                        (this.key ? this.isNull(this.selected[this.key]) :  false  )
+                    !this.selected
+                    ||
+                    (this.key ? this.isNull(this.selected[this.key]) : false  )
 
-                    ) {
-                        this.validator.valid   = false;
-                        this.validator.invalid = true;
-                    } else {
-                        this.validator.valid   = true;
-                        this.validator.invalid = false;
-                    }
-
+                ) {
+                    // if (Vue.config.debug) {
+                    //     console.log('<selected> changed detected. valid is FALSE');
+                    // }
+                    this.validator.valid   = false;
+                    this.validator.invalid = true;
+                } else {
+                    this.validator.valid   = true;
+                    this.validator.invalid = false;
                 }
+
             }
             if (this.selectdWatcherCount > 1) {
                 if (this.validator) {
                     this.validator.dirty = true;
-
-
-                    if (!this.selected) {
-                        this.validator.valid   = false;
-                        this.validator.invalid = true;
-                    } else {
-                        this.validator.valid   = true;
-                        this.validator.invalid = false;
-                    }
-
                 }
             }
-
 
 
             // if(!!this.selected){
@@ -574,15 +620,41 @@ module.exports = {
             //
             //     }
             // }
+
+
+
+            // console.log(this.validator.valid)
         },
         'isOpen'(){
             // debugger;
 
+        },
+        'validator'(){
+            if (this.validator) {
+                if (
+
+                    !this.selected
+                    ||
+                    (this.key ? this.isNull(this.selected[this.key]) : false  )
+
+                ) {
+                    // if (Vue.config.debug) {
+                    //     console.log('<selected> validator detected. valid is FALSE');
+                    // }
+                    this.validator.valid   = false;
+                    this.validator.invalid = true;
+                } else {
+                    this.validator.valid   = true;
+                    this.validator.invalid = false;
+                }
+            }
         }
     },
     methods: {
 
+        check: function () {
 
+        },
 
         isNull(value){
             return value === '-1' || value === '';
@@ -590,7 +662,7 @@ module.exports = {
         generateDropdownContent(){
 
 
-            var searchValue = this.trim(this.search);
+            let searchValue = this.trim(this.search);
 
 
 
@@ -612,9 +684,9 @@ module.exports = {
         },
         xhrSearch(value){
             // this.loading = true;
-            var self        = this;
-            var searchValue = '';
-            var values      = typeof (value) === 'undefined' ? '' : this.trim(value);
+            let self        = this;
+            let searchValue = '';
+            let values      = typeof (value) === 'undefined' ? '' : this.trim(value);
             // 判定是否含有querystring
 
 
@@ -632,7 +704,7 @@ module.exports = {
 
 
 
-                self.options = data[self.dataKey];
+                self.options = window.S ? window.S.getObject(data, self.dataKey) : data[self.dataKey];
                 if (self.cache) {
                     if (self.search === '') {
                         self.cacheData.default = deepClone(self.options);
@@ -707,6 +779,8 @@ module.exports = {
 
 
 
+
+
             // debugger;
             // isTag = 1;
             // 如果是对象数组
@@ -747,6 +821,12 @@ module.exports = {
 
 
             // 如果是自定义的标签
+
+            // csc
+
+
+
+            // debugger;
             if (option.isTag) {
                 this.onTag(option)
 
@@ -783,6 +863,9 @@ module.exports = {
                 }
             }
         },
+
+
+
         /**
          * Removes the given option from the selected options.
          * Additionally checks this.allowEmpty prop if option can be removed when
@@ -930,4 +1013,6 @@ module.exports = {
                 : this.activate()
         }
     }
-}
+};
+
+
